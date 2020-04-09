@@ -1,60 +1,10 @@
 local thread = require("thread")
 local component = require("component")
 local se = require("serialization")
-local shell = require("shell")
 
 local batteryManager = {}
 
-batteryManager.primaryInstance = nil
-
-function batteryManager.new()
-    local newguy = {}
-
-    -- When this is false the loop will shut down and refuse to start
-    newguy.canRun = false
-
-    -- Configuration
-    newguy.config = {}
-    newguy.configLocation = "/home/battery.config"
-
-    -- We need these so we know which components on our network are for what
-    newguy.config.newBatteries = {}
-    newguy.config.primaryBatteries = {}
-    newguy.config.overflowBatteries = {}
-    newguy.config.redstone = {}
-
-    -- This is used to keep track of changes over time
-    newguy.lastPrimaryEnergy = 0
-
-    -- Finally starting the beast
-    newguy.start = batteryManager.start
-    newguy.loop = batteryManager.loop
-
-    -- Config loading
-    newguy.readConfig = batteryManager.readConfig
-    newguy.writeConfig = batteryManager.writeConfig
-
-    -- These are for command line mostly, feel free to use them if you want though
-    newguy.view = batteryManager.view
-    newguy.set = batteryManager.set
-    newguy.start = batteryManager.start
-    newguy.stop = batteryManager.stop
-    
-    -- Battery registration
-    newguy.detectBatteries = batteryManager.detectBatteries
-    newguy.removeBattery = batteryManager.removeBattery
-    newguy.addPrimary = batteryManager.addPrimary
-    newguy.addOverflow = batteryManager.addOverflow
-
-    -- Error handling
-    newguy.errorCount = 0
-    newguy.handleError = batteryManager.handleError
-
-    return newguy
-end
-
 function batteryManager.start(self)
-    self:readConfig()
     self:detectBatteries()
 
     self.canRun = true
@@ -228,14 +178,6 @@ function batteryManager.view(self, args, options)
     end
 end
 
-function batteryManager.newIfDead()
-    if(batteryManager.primaryInstance == nil) then
-        batteryManager.primaryInstance = batteryManager.new()
-    end
-
-    return batteryManager.primaryInstance
-end
-
 -- Called by command line to configure the manager
 function batteryManager.set(self, args, options)
 end
@@ -272,28 +214,4 @@ function batteryManager.test(self, args, options)
     manager.canRun = false
 end
 
-local args, options = shell.parse(...)
-
-if(#args == 0) then
-    print("Usage: battman <action>")
-    
-    print("battman view <new|primary|overflow|redstone|all>")
-    print("Displays all of the specified devices.")
-    
-    print("battman set <new|primary|overflow|redstone> <battery address> [side]")
-    print("Sets the device at the address to the specified category. Redstone IO requires a side.")
-
-    print("battman start")
-    print("Starts up the manager")
-    return
-end
-
-local actions = {}
-actions["view"] = batteryManager.view
-actions["set"] = batteryManager.set
-actions["start"] = batteryManager.start
-actions["stop"] = batteryManager.stop
-actions["test"] = batteryManager.test
-
-local action = string.lower(args[1])
-actions[action](batteryManager.newIfDead(), args, options)
+return batteryManager
