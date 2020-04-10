@@ -8,7 +8,7 @@ function prettyprint.printTable(target)
 end
 
 function prettyprint.printArray(target)
-    for i = 1, target
+    for i = 1, #target
     do
         print(i .. " = " .. target[i])
     end

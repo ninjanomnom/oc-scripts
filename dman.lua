@@ -1,23 +1,25 @@
 local dependencyManager = {}
 
 function dependencyManager.import(...)
-    if(#arg == 0) then
+    local args = table.pack(...)
+
+    if(#args == 0) then
         return
     end
 
     local results = {}
 
-    for i = 1, #arg
+    for i = 1, #args
     do
         repeat
-            local target = require(arg[i])
+            local target = require(args[i])
             if(target == nil) then
                 break
             end
 
-            for name, func in target
+            for name, func in pairs(target)
             do
-                result[name] = func
+                results[name] = func
             end
         until true
     end

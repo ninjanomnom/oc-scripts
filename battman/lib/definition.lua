@@ -1,4 +1,8 @@
-local batteryManager = {}
+local dman = require("dman")
+local batteryManager = dman.import(
+    "battman/functions",
+    "battman/commands"
+)
 
 batteryManager.primaryInstance = nil
 

@@ -1,3 +1,7 @@
+local component = require("component")
+
+local batteryManager = {}
+
 -- Called by command line to view configuration/etc
 function batteryManager.cmdView(self, args, options)
     local all = "all"
@@ -165,3 +169,5 @@ function batteryManager.cmdTest(self, args, options)
     print("Shutting down")
     manager.canRun = false
 end
+
+return batteryManager
