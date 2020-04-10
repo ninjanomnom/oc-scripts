@@ -1,5 +1,10 @@
 local shell = require("shell")
-local batteryManager = require("battman/BatteryManager")
+local dman = require("dman")
+local batteryManager = dman.import(
+    "battman/functions.lua",
+    "battman/commands.lua",
+    "battman/definition.lua"
+)
 
 local args, options = shell.parse(...)
 

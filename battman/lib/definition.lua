@@ -1,4 +1,4 @@
-local batteryManager = require("battman/BatteryManagerFunctions")
+local batteryManager = {}
 
 batteryManager.primaryInstance = nil
 
