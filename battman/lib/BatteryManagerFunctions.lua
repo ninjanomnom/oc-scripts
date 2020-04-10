@@ -158,7 +158,8 @@ function batteryManager.cmdView(self, args, options)
         print("Uncategorized/New batteries")
         for address, bool in pairs(self.config.newBatteries)
         do
-            print(address)
+            local entity = component.proxy(address)
+            print(address, type(entity.getBlock()))
         end
         print("-----")
     end
@@ -166,7 +167,8 @@ function batteryManager.cmdView(self, args, options)
         print("Primary batteries")
         for address, bool in pairs(self.config.primaryBatteries)
         do
-            print(address)
+            local entity = component.proxy(address)
+            print(address, type(entity.getBlock()))
         end
         print("-----")
     end
@@ -174,7 +176,8 @@ function batteryManager.cmdView(self, args, options)
         print("Overflow batteries")
         for address, bool in pairs(self.config.overflowBatteries)
         do
-            print(address)
+            local entity = component.proxy(address)
+            print(address, type(entity.getBlock()))
         end
         print("-----")
     end
