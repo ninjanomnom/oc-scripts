@@ -2,7 +2,7 @@ local thread = require("thread")
 local component = require("component")
 local se = require("serialization")
 
-local batteryManager = {}
+batteryManager = {}
 
 function batteryManager.start(self)
     self:detectBatteries()
@@ -14,7 +14,6 @@ function batteryManager.start(self)
             print("Starting daemon")
             while(self.canRun)
             do
-                print("Daemon tick")
                 xpcall(
                     function()
                         self:loop()
@@ -66,10 +65,8 @@ function batteryManager.loop(self)
         local energy = battery:getStoredEnergy()
 
         if(energy < lowestPrimary) then
-            print("Shut off " .. address)
             -- shut off
         else
-            print("Turn on " .. address)
             -- turn on
         end
     end
@@ -88,18 +85,32 @@ function batteryManager.removeBattery(self, address)
     self.config.newBatteries[address] = nil
     self.config.overflowBatteries[address] = nil
     self.config.primaryBatteries[address] = nil
+    self.config.redstone[address] = nil
 end
 
 function batteryManager.addPrimary(self, address)
-    print("Adding primary")
     self:removeBattery(address)
     self.config.primaryBatteries[address] = true
 end
 
 function batteryManager.addOverflow(self, address)
-    print("Adding secondary")
     self:removeBattery(address)
     self.config.overflowBatteries[address] = true
+end
+
+function batteryManager.addRedstone(self, batteryAddress, dir, redstoneAddress)
+    if(self.config.primaryBatteries[batteryAddress] == nil) then
+        return false
+    end
+    if(self.config.overflowBatteries[batteryAddress] == nil) then
+        return false
+    end
+
+    self.config.redstone = self.config.redstone or {}
+    self.config.redstone[batteryAddress] = {}
+    self.config.redstone[batteryAddress].address = redstoneAddress
+    self.config.redstone[batteryAddress].dir = dir
+    return true
 end
 
 function batteryManager.readConfig(self)
@@ -117,8 +128,7 @@ function batteryManager.writeConfig(self)
     local configFile = io.open(self.configLocation, "w")
 
     configFile:write(se.serialize(self.config))
-    configfile:flush()
-    configFile:close()
+    io.close(configFile)
 end
 
 function batteryManager.handleError(self, err)
@@ -130,7 +140,7 @@ function batteryManager.handleError(self, err)
 end
 
 -- Called by command line to view configuration/etc
-function batteryManager.view(self, args, options)
+function batteryManager.cmdView(self, args, options)
     local all = "all"
     local new = "new"
     local primary = "primary"
@@ -179,19 +189,133 @@ function batteryManager.view(self, args, options)
 end
 
 -- Called by command line to configure the manager
-function batteryManager.set(self, args, options)
+function batteryManager.cmdSet(self, args, options)
+    if(#args <= 2) then
+        print("You must specify what to set")
+        return
+    end
+
+    local actions = {}
+    actions["primary"] = self.setPrimary
+    actions["overflow"] = self.setOverflow
+    actions["redstone"] = self.setRedstone
+
+    local action = string.lower(args[2])
+    actions[action](self, args, options)
+end
+
+function batteryManager.setPrimary(self, args, options)
+    if(#args < 3) then
+        print("You must specify what to set")
+        return
+    end
+
+    local address = component.get(args[3])
+    if(address == nil) then
+        print("The address given could not be found")
+        return
+    end
+
+    local entity = component.proxy(address)
+    if(entity == nil) then
+        print("The address given could not be found")
+        return
+    end
+
+    if(entity.type ~= "battery") then
+        print("The address given was not for a battery")
+        return
+    end
+
+    self:addPrimary(address)
+    self:writeConfig()
+end
+
+function batteryManager.setOverflow(self, args, options)
+    if(#args < 3) then
+        print("You must specify what to set")
+        return
+    end
+
+    local address = component.get(args[3])
+    if(address == nil) then
+        print("The address given could not be found")
+        return
+    end
+
+    local entity = component.proxy(address)
+    if(entity == nil) then
+        print("The address given could not be found")
+        return
+    end
+
+    if(entity.type ~= "battery") then
+        print("The address given was not for a battery")
+        return
+    end
+
+    self:addOverflow(address)
+    self:writeConfig()
+end
+
+function batteryManager.setRedstone(self, args, options)
+    if(#args < 5) then
+        print("You must specify what to set and in what direction the battery is and what battery it is")
+        return
+    end
+
+    local redstoneAddress = component.get(args[3])
+    if(redstoneAddress == nil) then
+        print("The redstone address given could not be found")
+        return
+    end
+
+    local entity = component.proxy(redstoneAddress)
+    if(entity == nil) then
+        print("The redstone address given could not be found")
+        return
+    end
+
+    if(entity.type ~= "redstone") then
+        print("The redstone address given was not for a redstone IO")
+        return
+    end
+
+    local dir = args[4]
+
+    local batteryAddress = component.get(args[5])
+    if(batteryAddress == nil) then
+        print("The battery address given could not be found")
+        return
+    end
+
+    local entity = component.proxy(batteryAddress)
+    if(entity == nil) then
+        print("The battery address given could not be found")
+        return
+    end
+
+    if(entity.type ~= "battery") then
+        print("The battery address given was not for a battery")
+        return
+    end
+
+    self:addRedstone(batteryAddress, dir, redstoneAddress)
+    self:writeConfig()
 end
 
 -- Called by command line to start the manager
-function batteryManager.start(self, args, options)
+function batteryManager.cmdStart(self, args, options)
+    self:start()
 end
 
 -- Called by command line to stop the manager
-function batteryManager.stop(self, args, options)
+function batteryManager.cmdStop(self, args, options)
+    self.canRun = false
 end
 
 -- Called by command line to debug the code
-function batteryManager.test(self, args, options)
+function batteryManager.cmdTest(self, args, options)
     print("Creating a new battery manager")
     local manager = batteryManager.new()
     print("Starting the battery manager")

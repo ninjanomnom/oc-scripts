@@ -30,16 +30,21 @@ function batteryManager.new()
     newguy.writeConfig = batteryManager.writeConfig
 
     -- These are for command line mostly, feel free to use them if you want though
-    newguy.view = batteryManager.view
-    newguy.set = batteryManager.set
-    newguy.start = batteryManager.start
-    newguy.stop = batteryManager.stop
+    newguy.cmdView = batteryManager.cmdView
+    newguy.cmdSet = batteryManager.cmdSet
+    newguy.setPrimary = batteryManager.setPrimary
+    newguy.setOverflow = batteryManager.setOverflow
+    newguy.setRedstone = batteryManager.setRedstone
+    newguy.cmdStart = batteryManager.cmdStart
+    newguy.cmdStop = batteryManager.cmdStop
+    newguy.cmdTest = batteryManager.cmdTest
     
     -- Battery registration
     newguy.detectBatteries = batteryManager.detectBatteries
     newguy.removeBattery = batteryManager.removeBattery
     newguy.addPrimary = batteryManager.addPrimary
     newguy.addOverflow = batteryManager.addOverflow
+    newguy.addRedstone = batteryManager.addRedstone
 
     -- Error handling
     newguy.errorCount = 0
