@@ -6,9 +6,9 @@ local batteryManager = {}
 function batteryManager.cmdView(self, args, options)
     local all = "all"
     local new = "new"
+    local redstone = "redstone"
     local primary = "primary"
     local overflow = "overflow"
-    local redstone = "redstone"
 
     local category
     if(#args <= 1) then
@@ -21,34 +21,43 @@ function batteryManager.cmdView(self, args, options)
         print("Uncategorized/New batteries")
         for address, bool in pairs(self.config.newBatteries)
         do
-            local entity = component.proxy(address)
+            print(address)
+        end
+        print("-----")
+    end
+    if((category == all) or (category == redstone)) then
+        print("Unassigned Redstone")
+        for address, bool in pairs(self.config.newRedstone)
+        do
             print(address)
         end
         print("-----")
     end
     if((category == all) or (category == primary)) then
         print("Primary batteries")
+        print("Battery Address", "Redstone Address")
         for address, bool in pairs(self.config.primaryBatteries)
         do
-            local entity = component.proxy(address)
-            print(address)
+            local redstone
+            if((self.config.bat2redstone ~= nil) and (self.config.bat2redstone[address] ~= nil)) then
+                redstone = self.config.bat2redstone[address].address
+            end
+
+            print(address, redstone)
         end
         print("-----")
     end
     if((category == all) or (category == overflow)) then
         print("Overflow batteries")
+        print("Battery Address", "Redstone Address")
         for address, bool in pairs(self.config.overflowBatteries)
         do
-            local entity = component.proxy(address)
-            print(address)
-        end
-        print("-----")
-    end
-    if((category == all) or (category == redstone)) then
-        print("Redstone IO controllers")
-        for address, bool in pairs(self.config.redstone)
-        do
-            print(address)
+            local redstone
+            if((self.config.bat2redstone ~= nil) and (self.config.bat2redstone[address] ~= nil)) then
+                redstone = self.config.bat2redstone[address].address
+            end
+
+            print(address, redstone)
         end
         print("-----")
     end
@@ -98,6 +107,8 @@ function batteryManager.setCompCheck(args, index, name)
         print("The address given was not for a " .. name)
         return false
     end
+
+    return true
 end
 
 function batteryManager.setPrimary(self, args, options)
@@ -122,9 +133,9 @@ end
 
 function batteryManager.setRedstone(self, args, options)
     if(
-        batteryManager.setCountCheck(args, 5) or 
-        batteryManager.setCompCheck(args, 3, battery) or
-        batteryManager.setCompCheck(args, 5, redstone)
+        (not batteryManager.setCountCheck(args, 5)) or 
+        (not batteryManager.setCompCheck(args, 3, "battery")) or
+        (not batteryManager.setCompCheck(args, 5, "redstone"))
     ) then
         return
     end

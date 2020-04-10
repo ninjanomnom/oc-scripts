@@ -45,16 +45,20 @@ function batteryManager.new()
     
     -- Battery registration
     newguy.detectBatteries = batteryManager.detectBatteries
+    newguy.detectRedstone = batteryManager.detectRedstone
     newguy.removeBattery = batteryManager.removeBattery
     newguy.addPrimary = batteryManager.addPrimary
     newguy.addOverflow = batteryManager.addOverflow
     newguy.addRedstone = batteryManager.addRedstone
+    newguy.removeRedstone = batteryManager.removeRedstone
 
     -- Error handling
     newguy.errorCount = 0
     newguy.handleError = batteryManager.handleError
 
     newguy:readConfig()
+    newguy:detectBatteries()
+    newguy:detectRedstone()
 
     return newguy
 end

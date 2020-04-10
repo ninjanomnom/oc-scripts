@@ -5,8 +5,6 @@ local se = require("serialization")
 local batteryManager = {}
 
 function batteryManager.start(self)
-    self:detectBatteries()
-
     self.canRun = true
 
     local worker = thread.create(
@@ -73,10 +71,21 @@ function batteryManager.loop(self)
 end
 
 function batteryManager.detectBatteries(self)
+    self.config.newBatteries = {}
     for address, type in pairs(component.list("battery", true))
     do
         if((self.config.primaryBatteries[address] == nil) and (self.config.overflowBatteries[address] == nil)) then
             self.config.newBatteries[address] = true
+        end
+    end
+end
+
+function batteryManager.detectRedstone(self)
+    self.config.newRedstone = {}
+    for address, type in pairs(component.list("redstone", true))
+    do
+        if(not self.config.redstone[address]) then
+            self.config.newRedstone[address] = true
         end
     end
 end
@@ -99,17 +108,32 @@ function batteryManager.addOverflow(self, address)
 end
 
 function batteryManager.addRedstone(self, batteryAddress, dir, redstoneAddress)
-    if(self.config.primaryBatteries[batteryAddress] == nil) then
-        return false
-    end
-    if(self.config.overflowBatteries[batteryAddress] == nil) then
-        return false
-    end
+    self:removeRedstone(redstoneAddress)
+
+    self.config.bat2redstone = self.config.redstone or {}
+    self.config.bat2redstone[batteryAddress] = {}
+    self.config.bat2redstone[batteryAddress].address = redstoneAddress
+    self.config.bat2redstone[batteryAddress].dir = dir
 
     self.config.redstone = self.config.redstone or {}
-    self.config.redstone[batteryAddress] = {}
-    self.config.redstone[batteryAddress].address = redstoneAddress
-    self.config.redstone[batteryAddress].dir = dir
+    self.config.redstone[redstoneAddress] = batteryAddress
+    
+    return true
+end
+
+function batteryManager.removeRedstone(self, redstoneAddress)
+    if((self.config.newRedstone ~= nil) and (self.config.newRedstone[redstoneAddress] ~= nill)) then
+        self.config.newRedstone[redstoneAddress] = nil
+        return
+    end
+
+    if((not self.config.redstone) or (not self.config.redstone[redstoneAddress])) then
+        return false
+    end
+    local batteryAddress = self.config.redstone[redstoneAddress]
+    
+    self.config.redstone[redstoneAddress] = nil
+    self.config.bat2redstone[batteryAddress] = nil
     return true
 end
 
