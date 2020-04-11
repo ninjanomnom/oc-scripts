@@ -155,6 +155,12 @@ end
 -- Called by command line to stop the manager
 function batteryManager.cmdStop(self, args, options)
     self.canRun = false
+
+    if (options.f) then
+        print("Force stopping the manager!")
+        self.thread:kill()
+        batteryManager.primaryInstance = nil
+    end
 end
 
 -- Called by command line to debug the code

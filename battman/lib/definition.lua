@@ -11,6 +11,9 @@ function batteryManager.new()
 
     -- When this is false the loop will shut down and refuse to start
     newguy.canRun = false
+    
+    -- If it's running, the thread for the work loop is in here
+    newguy.thread = nil
 
     -- Configuration
     newguy.config = {}

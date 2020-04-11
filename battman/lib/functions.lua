@@ -24,6 +24,7 @@ function batteryManager.start(self)
             end
         end
     )
+    self.thread = worker
     worker:detach()
 end
 
