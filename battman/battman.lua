@@ -25,7 +25,13 @@ actions["start"] = batteryManager.cmdStart
 actions["stop"] = batteryManager.cmdStop
 actions["test"] = batteryManager.cmdTest
 
-local action = string.lower(args[1])
-
 local manager = batteryManager.newIfDead()
-actions[action](manager, args, options)
+
+local action = actions[string.lower(args[1])]
+    
+if(not action) then
+    print(args[1] .. " is not a valid action")
+    return
+end
+
+action(manager, args, options)

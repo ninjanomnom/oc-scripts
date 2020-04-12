@@ -50,14 +50,17 @@ function batteryManager.cmdView(self, args, options)
     if((category == all) or (category == overflow)) then
         print("Overflow batteries")
         print("Battery Address", "Redstone Address")
-        for address, bool in pairs(self.config.overflowBatteries)
+        for address, status in pairs(self.config.overflowBatteries)
         do
             local redstone
+            local dir
             if((self.config.bat2redstone ~= nil) and (self.config.bat2redstone[address] ~= nil)) then
-                redstone = self.config.bat2redstone[address].address
+                local redstoneData = self.config.bat2redstone[address]
+                redstone = redstoneData.address
+                dir = redstoneData.dir
             end
 
-            print(address, redstone)
+            print(address, redstone, dir, status)
         end
         print("-----")
     end
@@ -65,18 +68,22 @@ end
 
 -- Called by command line to configure the manager
 function batteryManager.cmdSet(self, args, options)
-    if(#args <= 2) then
-        print("You must specify what to set")
-        return
-    end
+    batteryManager.setCountCheck(args, 2)
 
     local actions = {}
     actions["primary"] = self.setPrimary
     actions["overflow"] = self.setOverflow
     actions["redstone"] = self.setRedstone
 
-    local action = string.lower(args[2])
-    actions[action](self, args, options)
+    local action = actions[string.lower(args[2])]
+    
+    if(not action) then
+        print(args[2] .. " is not a valid set type")
+        return
+    end
+
+    action(self, args, options)
+
     self:writeConfig()
 end
 
@@ -112,7 +119,7 @@ function batteryManager.setCompCheck(args, index, name)
 end
 
 function batteryManager.setPrimary(self, args, options)
-    if(batteryManager.setCountCheck(args, 3) or batteryManager.setCompCheck(args, 3, "battery")) then
+    if((not batteryManager.setCountCheck(args, 3)) or (not batteryManager.setCompCheck(args, 3, "battery"))) then
         return
     end
 
@@ -122,7 +129,7 @@ function batteryManager.setPrimary(self, args, options)
 end
 
 function batteryManager.setOverflow(self, args, options)
-    if(batteryManager.setCountCheck(args, 3) or batteryManager.setCompCheck(args, 3, "battery")) then
+    if((not batteryManager.setCountCheck(args, 3)) or (not batteryManager.setCompCheck(args, 3, "battery"))) then
         return
     end
 
@@ -158,7 +165,9 @@ function batteryManager.cmdStop(self, args, options)
 
     if (options.f) then
         print("Force stopping the manager!")
-        self.thread:kill()
+        if(self.thread) then
+            self.thread:kill()
+        end
         batteryManager.primaryInstance = nil
     end
 end

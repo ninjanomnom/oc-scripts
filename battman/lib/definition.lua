@@ -23,7 +23,9 @@ function batteryManager.new()
     newguy.config.newBatteries = {}
     newguy.config.primaryBatteries = {}
     newguy.config.overflowBatteries = {}
+    newguy.config.bat2redstone = {}
     newguy.config.redstone = {}
+    newguy.config.newRedstone = {}
 
     -- This is used to keep track of changes over time
     newguy.lastPrimaryEnergy = 0
@@ -58,6 +60,7 @@ function batteryManager.new()
     -- Error handling
     newguy.errorCount = 0
     newguy.handleError = batteryManager.handleError
+    newguy.cleanup = batteryManager.cleanup
 
     newguy:readConfig()
     newguy:detectBatteries()

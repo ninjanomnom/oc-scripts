@@ -1,6 +1,7 @@
 local thread = require("thread")
 local component = require("component")
 local se = require("serialization")
+local sides = require("sides")
 
 local batteryManager = {}
 
@@ -9,19 +10,20 @@ function batteryManager.start(self)
 
     local worker = thread.create(
         function()
-            print("Starting daemon")
+            print("Starting battman daemon")
             while(self.canRun)
             do
                 xpcall(
                     function()
                         self:loop()
-                    end, 
+                    end,
                     function(err)
                         self:handleError(err)
                     end
                 )
                 os.sleep(5)
             end
+            print("Ending battman daemon")
         end
     )
     self.thread = worker
@@ -35,10 +37,6 @@ function batteryManager.loop(self)
     for address, bool in pairs(self.config.primaryBatteries)
     do
         local battery = component.proxy(address)
-        if(battery == nil) then
-            self.config.primaryBatteries[address] = nil
-        end
-
         local energy = battery:getStoredEnergy()
 
         if(energy == 0) then
@@ -57,22 +55,26 @@ function batteryManager.loop(self)
     for address, bool in pairs(self.config.overflowBatteries)
     do
         local battery = component.proxy(address)
-        if(battery == nil) then
-            self.config.overflowBatteries[address] = nil
-        end
-
+        local redstoneData = self.config.bat2redstone[address]
         local energy = battery:getStoredEnergy()
-
-        if(energy < lowestPrimary) then
-            -- shut off
+        if(redstoneData and redstoneData.address) then
+            local entity = component.proxy(redstoneData.address)
+            if(energy < lowestPrimary) then
+                -- shut off
+                entity.setOutput(sides[redstoneData.dir], 0)
+                self.config.overflowBatteries[address] = "off"
+            else
+                -- turn on
+                entity.setOutput(sides[redstoneData.dir], 15)
+                self.config.overflowBatteries[address] = "on"
+            end
         else
-            -- turn on
+            self.config.overflowBatteries[address] = "off"
         end
     end
 end
 
 function batteryManager.detectBatteries(self)
-    self.config.newBatteries = {}
     for address, type in pairs(component.list("battery", true))
     do
         if((self.config.primaryBatteries[address] == nil) and (self.config.overflowBatteries[address] == nil)) then
@@ -82,7 +84,6 @@ function batteryManager.detectBatteries(self)
 end
 
 function batteryManager.detectRedstone(self)
-    self.config.newRedstone = {}
     for address, type in pairs(component.list("redstone", true))
     do
         if(not self.config.redstone[address]) then
@@ -123,12 +124,12 @@ function batteryManager.addRedstone(self, batteryAddress, dir, redstoneAddress)
 end
 
 function batteryManager.removeRedstone(self, redstoneAddress)
-    if((self.config.newRedstone ~= nil) and (self.config.newRedstone[redstoneAddress] ~= nill)) then
+    if(self.config.newRedstone and self.config.newRedstone[redstoneAddress]) then
         self.config.newRedstone[redstoneAddress] = nil
         return
     end
 
-    if((not self.config.redstone) or (not self.config.redstone[redstoneAddress])) then
+    if((not self.config["redstone"]) or (not self.config.redstone[redstoneAddress])) then
         return false
     end
     local batteryAddress = self.config.redstone[redstoneAddress]
@@ -145,8 +146,20 @@ function batteryManager.readConfig(self)
         return
     end
 
-    self.config = se.unserialize(configFile:read("*all"))
+    local newconfig = se.unserialize(configFile:read("*all"))
+    if(newconfig == nil) then
+        return
+    end
+
     configFile:close()
+
+    -- We don't just assign the result because that would make blank fields not even have the table
+    for key, value in pairs(newconfig)
+    do
+        self.config[key] = value
+    end
+
+    self:cleanup()
 end
 
 function batteryManager.writeConfig(self)
@@ -157,11 +170,64 @@ function batteryManager.writeConfig(self)
 end
 
 function batteryManager.handleError(self, err)
-    errorCount = errorCount + 1
-    if(errorCount >= 10) then -- This means it threw an error 10 times in a row
+    self.errorCount = self.errorCount + 1
+    if(self.errorCount >= 10) then -- This means it threw an error 10 times in a row
         self.canRun = false
     end
-    print("ERROR:", err)
+
+    pcall(self.cleanup, self)
+
+    print("ERROR!:", err)
+    print(tostring(debug.traceback()))
+end
+
+function batteryManager.cleanup(self)
+    for address, bool in pairs(self.config.newBatteries)
+    do
+        if(component.proxy(address) == nil) then
+            self:removeBattery(address)
+        end
+    end
+
+    for address, bool in pairs(self.config.primaryBatteries)
+    do
+        if(component.proxy(address) == nil) then
+            self:removeBattery(address)
+        end
+    end
+
+    for address, bool in pairs(self.config.overflowBatteries)
+    do
+        if(component.proxy(address) == nil) then
+            self:removeBattery(address)
+        end
+    end
+
+    for address, bool in pairs(self.config.newRedstone)
+    do
+        if(component.proxy(address) == nil) then
+            self:removeRedstone(address)
+        end
+    end
+
+    for address, bool in pairs(self.config.redstone)
+    do
+        if(component.proxy(address) == nil) then
+            self:removeRedstone(address)
+        end
+    end
+
+    for address, bool in pairs(self.config.bat2redstone)
+    do
+        if(component.proxy(address) == nil) then
+            self:removeBattery(address)
+        end
+
+        local redstoneData = self.config.bat2redstone[address]
+        if(redstoneData.address and (component.proxy(redstoneData.address) == nil)) then
+            self:removeRedstone(redstoneData.address)
+        end
+    end
 end
 
 return batteryManager
