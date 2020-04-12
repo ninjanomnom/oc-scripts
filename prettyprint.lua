@@ -1,16 +1,16 @@
 local prettyprint = {}
 
 function prettyprint.printTable(target)
-    for key, value in target
+    for key, value in pairs(target)
     do
-        print(key, value)
+        print(tostring(key), tostring(value))
     end
 end
 
 function prettyprint.printArray(target)
     for i = 1, #target
     do
-        print(i .. " = " .. target[i])
+        print(i .. " = " .. tostring(target[i]))
     end
 end
 
