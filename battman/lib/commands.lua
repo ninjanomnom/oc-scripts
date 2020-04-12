@@ -74,6 +74,8 @@ function batteryManager.cmdSet(self, args, options)
     actions["primary"] = self.setPrimary
     actions["overflow"] = self.setOverflow
     actions["redstone"] = self.setRedstone
+    actions["signal"] = self.setSignal
+    actions["port"] = self.setPort
 
     local action = actions[string.lower(args[2])]
     
@@ -152,6 +154,23 @@ function batteryManager.setRedstone(self, args, options)
     local redstoneAddress = component.get(args[5])
 
     self:addRedstone(batteryAddress, dir, redstoneAddress)
+end
+
+function batteryManager.setPort(self, args, options)
+    if(not batteryManager.setCountCheck(args, 3)) then
+        return
+    end
+
+    self.config.port = tonumber(args[3]) or 0
+end
+
+function batteryManager.setSignal(self, args, options)
+    if(not batteryManager.setCountCheck(args, 3)) then
+        return
+    end
+
+    self.config.signalStrength = tonumber(args[3]) or 0
+    component.modem.setStrength(self.config.signalStrength)
 end
 
 -- Called by command line to start the manager

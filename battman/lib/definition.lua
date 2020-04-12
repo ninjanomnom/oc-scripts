@@ -26,6 +26,8 @@ function batteryManager.new()
     newguy.config.bat2redstone = {}
     newguy.config.redstone = {}
     newguy.config.newRedstone = {}
+    newguy.config.port = 0
+    newguy.config.signalStrength = 0
 
     -- This is used to keep track of changes over time
     newguy.lastPrimaryEnergy = 0
@@ -44,6 +46,8 @@ function batteryManager.new()
     newguy.setPrimary = batteryManager.setPrimary
     newguy.setOverflow = batteryManager.setOverflow
     newguy.setRedstone = batteryManager.setRedstone
+    newguy.setSignal = batteryManager.setSignal
+    newguy.setPort = batteryManager.setPort
     newguy.cmdStart = batteryManager.cmdStart
     newguy.cmdStop = batteryManager.cmdStop
     

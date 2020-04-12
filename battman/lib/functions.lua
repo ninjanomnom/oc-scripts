@@ -73,6 +73,13 @@ function batteryManager.loop(self)
             self.config.overflowBatteries[address] = "off"
         end
     end
+
+    if(self.config.port and self.config.signalStrength) then
+        local message = {}
+        message.combinedPrimary = combinedPrimary
+        message.difference = difference
+        component.modem.broadcast(self.config.port, se.serialize(message))
+    end
 end
 
 function batteryManager.detectBatteries(self)
@@ -160,6 +167,9 @@ function batteryManager.readConfig(self)
         self.config[key] = value
     end
 
+    if(self.config.signalStrength) then
+        component.modem.setStrength(self.config.signalStrength)
+    end
     self:cleanup()
 end
 
