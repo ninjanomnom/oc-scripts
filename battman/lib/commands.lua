@@ -172,28 +172,4 @@ function batteryManager.cmdStop(self, args, options)
     end
 end
 
--- Called by command line to debug the code
-function batteryManager.cmdTest(self, args, options)
-    print("Creating a new battery manager")
-    local manager = batteryManager.new()
-    print("Starting the battery manager")
-    manager:start()
-    os.sleep()
-    for address, bool in pairs(manager.config.newBatteries)
-    do
-        local battery = component.proxy(address)
-        local x, y, z = battery:getCoords()
-        if(z < 1022) then
-            manager:addOverflow(address)
-        else
-            manager:addPrimary(address)
-        end
-    end
-    print("Waiting 10 seconds for the battery manager to run for a while...")
-    os.sleep(10)
-    print("The last total amount of energy in the primary batteries was: " .. manager.lastPrimaryEnergy)
-    print("Shutting down")
-    manager.canRun = false
-end
-
 return batteryManager

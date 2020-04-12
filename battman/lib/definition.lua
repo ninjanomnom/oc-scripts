@@ -46,7 +46,6 @@ function batteryManager.new()
     newguy.setRedstone = batteryManager.setRedstone
     newguy.cmdStart = batteryManager.cmdStart
     newguy.cmdStop = batteryManager.cmdStop
-    newguy.cmdTest = batteryManager.cmdTest
     
     -- Battery registration
     newguy.detectBatteries = batteryManager.detectBatteries

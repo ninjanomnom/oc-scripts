@@ -50,6 +50,7 @@ function batteryManager.loop(self)
         combinedPrimary = combinedPrimary + energy
     end
 
+    local difference = combinedPrimary - self.lastPrimaryEnergy
     self.lastPrimaryEnergy = combinedPrimary
 
     for address, bool in pairs(self.config.overflowBatteries)

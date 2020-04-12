@@ -23,7 +23,6 @@ actions["view"] = batteryManager.cmdView
 actions["set"] = batteryManager.cmdSet
 actions["start"] = batteryManager.cmdStart
 actions["stop"] = batteryManager.cmdStop
-actions["test"] = batteryManager.cmdTest
 
 local manager = batteryManager.newIfDead()
 
