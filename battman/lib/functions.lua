@@ -74,6 +74,25 @@ function batteryManager.loop(self)
         end
     end
 
+    for address, bool in pairs(self.config.accessoryBatteries)
+    do
+        local battery = component.proxy(address)
+        redstoneData = self.config.bat2redstone[address]
+        local energy = battery:getStoredEnergy()
+        if(redstoneData and RedstoneData.address) then
+            local entity = component.proxy(redstoneData.address)
+            if(energy < 1000000000) then
+                entity.setOutput(sides[redstoneData.dir], 0)
+                self.config.accessoryBatteries[address] = "off"
+            else
+                entity.setOutput(sides[redstoneData.dir], 15)
+                self.config.accessoryBatteries[address] = "on"
+            end
+        else
+            self.config.accessoryBatteries[address] = "unknown"
+        end
+    end
+
     if(self.config.port and self.config.signalStrength) then
         local message = {}
         message.combinedPrimary = combinedPrimary
