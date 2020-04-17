@@ -23,6 +23,7 @@ function batteryManager.new()
     newguy.config.newBatteries = {}
     newguy.config.primaryBatteries = {}
     newguy.config.overflowBatteries = {}
+    newguy.config.accessoryBatteries = {}
     newguy.config.bat2redstone = {}
     newguy.config.redstone = {}
     newguy.config.newRedstone = {}

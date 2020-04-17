@@ -9,6 +9,7 @@ function batteryManager.cmdView(self, args, options)
     local redstone = "redstone"
     local primary = "primary"
     local overflow = "overflow"
+    local accessory = "accessory"
 
     local category
     if(#args <= 1) then
@@ -64,6 +65,23 @@ function batteryManager.cmdView(self, args, options)
         end
         print("-----")
     end
+    if((category == all) or (category == accessory)) then
+        print("Accessory batteries")
+        print("Battery Address", "Redstone Address")
+        for address, status in pairs(self.config.accessoryBatteries)
+        do
+            local redstone
+            local dir
+            if((self.config.bat2redstone ~= nil) and (self.config.bat2redstone[address] ~= nil)) then
+                local redstoneData = self.config.bat2redstone[address]
+                redstone = redstoneData.address
+                dir = redstoneData.dir
+            end
+
+            print(address, redstone, dir, status)
+        end
+        print("-----")
+    end
 end
 
 -- Called by command line to configure the manager
@@ -73,6 +91,7 @@ function batteryManager.cmdSet(self, args, options)
     local actions = {}
     actions["primary"] = self.setPrimary
     actions["overflow"] = self.setOverflow
+    actions["accessory"] = self.setAccessory
     actions["redstone"] = self.setRedstone
     actions["signal"] = self.setSignal
     actions["port"] = self.setPort
@@ -138,6 +157,16 @@ function batteryManager.setOverflow(self, args, options)
     local address = component.get(args[3])
 
     self:addOverflow(address)
+end
+
+function batteryManager.setAccessory(self, args, options)
+    if((not batteryManager.setCountCheck(args, 3)) or (not batteryManager.setCompCheck(args, 3, "battery"))) then
+        return
+    end
+
+    local address = component.get(args[3])
+
+    self:addAccessory(address)
 end
 
 function batteryManager.setRedstone(self, args, options)

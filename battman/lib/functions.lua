@@ -104,6 +104,7 @@ function batteryManager.removeBattery(self, address)
     self.config.newBatteries[address] = nil
     self.config.overflowBatteries[address] = nil
     self.config.primaryBatteries[address] = nil
+    self.config.accessoryBatteries[address] = nil
     self.config.redstone[address] = nil
 end
 
@@ -115,6 +116,11 @@ end
 function batteryManager.addOverflow(self, address)
     self:removeBattery(address)
     self.config.overflowBatteries[address] = true
+end
+
+function batteryManager.addAccessory(self, address)
+    self:removeBattery(address)
+    self.config.accessoryBatteries[address] = true
 end
 
 function batteryManager.addRedstone(self, batteryAddress, dir, redstoneAddress)
