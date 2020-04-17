@@ -21,7 +21,7 @@ function batteryManager.start(self)
                         self:handleError(err)
                     end
                 )
-                os.sleep(5)
+                os.sleep(60)
             end
             print("Ending battman daemon")
         end
