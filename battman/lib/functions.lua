@@ -70,7 +70,7 @@ function batteryManager.loop(self)
                 self.config.overflowBatteries[address] = "on"
             end
         else
-            self.config.overflowBatteries[address] = "off"
+            self.config.overflowBatteries[address] = "unknown"
         end
     end
 
