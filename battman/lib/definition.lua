@@ -32,38 +32,10 @@ function batteryManager.new()
     -- This is used to keep track of changes over time
     newguy.lastPrimaryEnergy = 0
 
-    -- Finally starting the beast
-    newguy.start = batteryManager.start
-    newguy.loop = batteryManager.loop
-
-    -- Config loading
-    newguy.readConfig = batteryManager.readConfig
-    newguy.writeConfig = batteryManager.writeConfig
-
-    -- These are for command line mostly, feel free to use them if you want though
-    newguy.cmdView = batteryManager.cmdView
-    newguy.cmdSet = batteryManager.cmdSet
-    newguy.setPrimary = batteryManager.setPrimary
-    newguy.setOverflow = batteryManager.setOverflow
-    newguy.setRedstone = batteryManager.setRedstone
-    newguy.setSignal = batteryManager.setSignal
-    newguy.setPort = batteryManager.setPort
-    newguy.cmdStart = batteryManager.cmdStart
-    newguy.cmdStop = batteryManager.cmdStop
-    
-    -- Battery registration
-    newguy.detectBatteries = batteryManager.detectBatteries
-    newguy.detectRedstone = batteryManager.detectRedstone
-    newguy.removeBattery = batteryManager.removeBattery
-    newguy.addPrimary = batteryManager.addPrimary
-    newguy.addOverflow = batteryManager.addOverflow
-    newguy.addRedstone = batteryManager.addRedstone
-    newguy.removeRedstone = batteryManager.removeRedstone
-
-    -- Error handling
-    newguy.errorCount = 0
-    newguy.handleError = batteryManager.handleError
-    newguy.cleanup = batteryManager.cleanup
+    for name, funcOrVal in pairs(batteryManager)
+    do
+        newguy[name] = funcOrVal
+    end
 
     newguy:readConfig()
     newguy:detectBatteries()

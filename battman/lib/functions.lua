@@ -180,6 +180,8 @@ function batteryManager.writeConfig(self)
     io.close(configFile)
 end
 
+batteryManager.errorCount = 0
+
 function batteryManager.handleError(self, err)
     self.errorCount = self.errorCount + 1
     if(self.errorCount >= 10) then -- This means it threw an error 10 times in a row
