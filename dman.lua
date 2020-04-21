@@ -9,16 +9,23 @@ function dependencyManager.import(...)
 
     local results = {}
 
-    for i = 1, #args
+    for key, package in pairs(args)
     do
+        if(key == "n") then
+            break
+        end
+
         repeat
-            local target = require(args[i])
+            local target = require(package)
             if(target == nil) then
                 break
             end
 
             for name, func in pairs(target)
             do
+                if(name == "n") then
+                    break
+                end
                 results[name] = func
             end
         until true
