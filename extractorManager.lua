@@ -21,7 +21,7 @@ function Tick()
     local chosenStackCount = 0
     for i = 0, 4 do
         local stackCount = ItemsInSlot(i)
-        if(stackCount > chosenStackCount) then
+        if(stackCount >= chosenStackCount) then
             chosenSlot = i
             chosenStackCount = stackCount
         end
