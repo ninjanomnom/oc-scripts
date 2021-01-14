@@ -3,11 +3,6 @@ local sides = require("sides")
 
 local args = {...}
 
-if(#args == 0) then
-    print("Usage: redstone <stage>")
-    return
-end
-
 local extractor = component.extractor
 
 local a, b, stageOneInput, d, e = extractor.getSlot(0)
